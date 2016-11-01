@@ -1,6 +1,15 @@
-const {obj: through} = require('throo')
 const parser = require('tap_parser')
-const duplex = require('duplexer')
+const writable = require('to2')
+
+const collectData = (synopsis) => {
+  return writable.obj((chunk, enc, cb) => {
+    if (chunk.type === 'test') {
+      ++synopsis.tests
+      chunk.parsed.ok ? synopsis.passed.push(chunk) : synopsis.failed.push(chunk)
+    }
+    cb()
+  })
+}
 
 const formSynopsis = () => {
   const synopsis = {
@@ -15,20 +24,15 @@ const formSynopsis = () => {
   }
 
   const parserStream = parser()
+  const collectStream = collectData(synopsis)
   const synopsisStream = parserStream
-    .pipe(through((push, chunk, enc, cb) => {
-      if (chunk.type === 'test') {
-        ++synopsis.tests
-        chunk.parsed.ok ? synopsis.passed.push(chunk) : synopsis.failed.push(chunk)
-      }
-      cb()
-    }, (push, cb) => {
-      synopsis.time.end = new Date().getTime()
-      synopsis.time.total = synopsis.time.end - synopsis.time.start
-      push(synopsis)
-      cb()
-    }))
-  return duplex(parserStream, synopsisStream)
+    .pipe(collectStream)
+  parserStream.on('end', () => {
+    synopsis.time.end = new Date().getTime()
+    synopsis.time.total = synopsis.time.end - synopsis.time.start
+  })
+  parserStream.getSynopsis = () => synopsis
+  return parserStream
 }
 
 module.exports = formSynopsis
