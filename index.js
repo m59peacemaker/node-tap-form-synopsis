@@ -24,9 +24,8 @@ const formSynopsis = () => {
   }
 
   const parserStream = parser()
-  const collectStream = collectData(synopsis)
-  const synopsisStream = parserStream
-    .pipe(collectStream)
+  parserStream
+    .pipe(collectData(synopsis))
   parserStream.on('end', () => {
     synopsis.time.end = new Date().getTime()
     synopsis.time.total = synopsis.time.end - synopsis.time.start
