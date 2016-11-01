@@ -1,4 +1,5 @@
 const test = require('tape')
+const through = require('through2')
 const formSynopsis = require('../')
 
 test('forms synopsis', t => {
@@ -13,7 +14,7 @@ whatever
 not ok 2 sigh
 1..2
   `)
-  s.on('end', () => {
+  s.on('finish', () => {
     const synopsis = s.getSynopsis()
     t.deepEqual(synopsis, {
       time: synopsis.time,
@@ -23,4 +24,15 @@ not ok 2 sigh
     })
   })
   s.end()
+})
+
+test('stream is writeable only', t => {
+  t.plan(1)
+  const s = formSynopsis()
+  try {
+    s.pipe(through((chunk, enc, cb) => cb()))
+    t.fail('stream is readable')
+  } catch (err) {
+    t.pass('stream is not readable: ' + err.stack.split('\n')[0])
+  }
 })
