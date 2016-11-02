@@ -1,28 +1,24 @@
 const parser = require('tap_parser')
 const writable = require('to2')
 
-const collectData = (synopsis) => {
-  return writable.obj((chunk, enc, cb) => {
-    if (chunk.type === 'test') {
-      return setTimeout(() => {
-        ++synopsis.tests
-        chunk.parsed.ok ? synopsis.passed.push(chunk) : synopsis.failed.push(chunk)
-        cb()
-      }, 1000)
-    }
-    cb()
-  })
-}
-
-const fix = (transformStream, writableStream) => {
-  const newStream = writable((chunk, enc, cb) => {
+const transformToWritable = (transformStream, writableStream, options) => {
+  return writable(options, (chunk, enc, cb) => {
     transformStream.write(chunk)
     cb()
   }, (cb) => {
     writableStream.on('finish', cb)
     transformStream.end()
   })
-  return newStream
+}
+
+const collectData = (synopsis) => {
+  return writable.obj((chunk, enc, cb) => {
+    if (chunk.type === 'test') {
+      ++synopsis.tests
+      chunk.parsed.ok ? synopsis.passed.push(chunk) : synopsis.failed.push(chunk)
+    }
+    cb()
+  })
 }
 
 const formSynopsis = () => {
@@ -40,7 +36,7 @@ const formSynopsis = () => {
   const parserStream = parser()
   const collectStream = parserStream
     .pipe(collectData(synopsis))
-  const s = fix(parserStream, collectStream)
+  const s = transformToWritable(parserStream, collectStream)
   s.on('finish', () => {
     synopsis.time.end = new Date().getTime()
     synopsis.time.total = synopsis.time.end - synopsis.time.start
