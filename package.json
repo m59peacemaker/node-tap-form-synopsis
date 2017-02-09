@@ -1,6 +1,6 @@
 {
   "name": "tap-form-synopsis",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Receives streaming TAP and emits a synopsis object when it ends.",
   "keywords": [
     "TAP",
@@ -21,7 +21,7 @@
     "name": "Johnny Hauser",
     "email": "johnnyhauser@gmail.com"
   },
-  "license": "VOL",
+  "license": "CC0-1.0",
   "dependencies": {
     "duplexer": "^0.1.1",
     "tap_parser": "^1.0.3",
