@@ -1,6 +1,6 @@
 {
   "name": "tap-form-synopsis",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Receives streaming TAP and emits a synopsis object when it ends.",
   "keywords": [
     "TAP",
